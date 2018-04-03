@@ -1,7 +1,7 @@
 # Using Gulp to Build a Front End Website
-В репозитории представлен возможный вариант gulp-тасок для сборки фронт-энд проекта. Так получилось, что Gulp в качестве таск-ранера я использую очень давно. Пожалуй что с самого начала его существования. За это время у меня сложился свой стиль написания gulp окружения. В этом направлении на меня оказали влияние и другие разработчики, в частности [Andrew Welch](https://nystudio107.com/blog/a-gulp-workflow-for-frontend-development-automation) своей статьей в 2015 году. Для выполнения вашего задания я решил не отклоняться от мной принятых правил, тем более что они прекрасно ложатся на ТЗ. Я снабдил код комментариями так, чтобы было ясно что я делаю в каждый конкретный момент. В общем и целом мой код не очень и отличается от того, что делает абсолютное большинство разработчиков для решения подобных задач.
+A possible version of the gulp-team ti build the front-end of the project is presented in the repository.   So it turned out that I use Gulp as a task-ranner for a long time . Perhaps from the very beginning of its existence. During this time I got my style of writing gulp environment. In this direction, I was influenced by other developers, in particular [Andrew Welch](https://nystudio107.com/blog/a-gulp-workflow-for-frontend-development-automation) with his article of 2015 year. To fulfill the task I decided to follow my rules, as far as they fit the task requirements perfectly. I added comments to me code so that it is clear what I do on each step. In general, my code is not very different from what the absolute majority of developers do to solve similar problems.
 
-У меня получилось в итоге 9 задач (основных и вспомогательных):
+I got in a total 9 tasks (main and secondary):
 * clean
 * scripts
 * compile:scss
@@ -12,35 +12,35 @@
 * build
 * default
 
-Задача *styles* связана с задачей *compile:scss*, задача *build* связана с задачами *clean*, *images*, *icons*, *styles*, *scripts*, *template*. Эти задачи выполняются последовательно при помощи npm-пакета [run-sequence](https://www.npmjs.com/package/run-sequence). Задача *default* связана с задачей *build*.
+Task *styles* is related to the task *compile:scss*, task *build* is related to the tasks *clean*, *images*, *icons*, *styles*, *scripts*, *template*. These tasks are performed in sequence using npm-package [run-sequence](https://www.npmjs.com/package/run-sequence). Task *default* is relates to the task *build*.
 
-Задача *default* запускает веб-сервер с функцией автоперезагрузки и запускает два наблюдателя за файлами SCSS и JS. В качестве веб-сервера я использовал пакет [gulp-server-livereload](https://www.npmjs.com/package/gulp-server-livereload).
+Task *default* runs web server with auto-reload function and starts  and runs two observers for SCSS and JS files. As a web server I used package [gulp-server-livereload](https://www.npmjs.com/package/gulp-server-livereload).
 
-Для того, чтобы запустить пример, вам потребуется восстановить все пакеты, использованные мной для его построения. Это можно сделать следующим образом:
+Tu run the project one will need to restore all packages, which I used to build it. This can be done as follows:
 ```shell
     npm install
 ```
-или любым другим известным вам способом.
+or any other known way.
 
-Для того, чтобы выполнить построение проекта вы можете сделать следующее:
+In order to build a project, one can do the following:
 ```shell
     npm run build
 ```
-или
+or
 ```shell
     gulp build
 ```
-или вызывать любые необходимые задачи вручную.
+or call for any necessary tasks manually.
 
-Для запуска веб-сервера вы можете сделать следующее:
+To run the web server, one can do the following:
 ```shell
     npm start
 ```
-или
+or
 ```shell
     gulp
 ```
 
-Так же обращаю ваше внимание на то, что я написал задачу которая перености файл *index.html* в папку *dist*, при помощи пакета [gulp-useref](https://www.npmjs.com/package/gulp-useref) меняет ссылки на стили и скрипты, а так же при помощи пакета [gulp-replace](https://www.npmjs.com/package/gulp-replace) заменяет ссылки на изображения (подробнее смотрит в комментариях). Так же я переношу иконочные шрифты в папку *dist/content/icons* (я заменил пути в SCSS переменных, хотя эти шрифты и не используются у вас в верстке). Так же один из ваших скриптов зависит от jQuery, которая не была установлена в ваш проект по умолчанию. Я установил ее и включил в сборку, хотя опять таки - скрипты в вашем проекте не используются.
+I would like to pay your attention to the fact that I wrote a task to move *index.html* in *dist* folder, with a help of [gulp-useref](https://www.npmjs.com/package/gulp-useref) replaces links to styles and scripts, and also with a help of package [gulp-replace](https://www.npmjs.com/package/gulp-replace) replaces links to images (see comments for details). Also I move icon fonts to *dist/content/icons* folder (I replaces paths in SCSS variables, although this fonts are not used in your layout). Also one of your scripts depends on jQuery, which was not set to your default project. I installed it and included it into my build, although - scripts are not used in your project.
 
 ### I hope you will enjoy it. Max Eremin

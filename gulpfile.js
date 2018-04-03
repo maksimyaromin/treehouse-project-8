@@ -1,5 +1,5 @@
-/* Импортирование файла package.json для 
-    использования переменных из него */
+/* Import package.json file for  
+   using its variables */
 const package = require("./package.json");
 
 const      gulp = require("gulp"),
@@ -26,26 +26,25 @@ const      gulp = require("gulp"),
     runSequence = require("run-sequence").use(gulp),
          server = require("gulp-server-livereload");
 
-/* Общий обработчик ошибок для npm-пакета plumber, который
-    будет использоваться в этом файле */
+/* The common error handler for the npm-package plumber, which
+     will be used in this file */
 const onError = err => {
     console.log(err);
 };
 
-/* Когда-то давно я перенял некоторые идеи в построении gulp-окружения у
-    Andrew Welch (https://nystudio107.com/blog/a-gulp-workflow-for-frontend-development-automation) 
-    и с тех пор к своим файлам я также добавляю баннер, который
-    описывается в следующей строчке кода. При помощи пакета 
-    git-rev-sync я проставляю к своему коду короткий хэш комита из которого
-    собирался релиз. И хотя такой баннер не подходит для проектов, не 
-    использующих гит (подходит частично), в нашем случае это не важно, т. к.
-    вы будете смотреть мой код слитый с гитхаба. Однако, т. к. у проверяющего может
-    не быть доступа к гиту, я закомментировал использование этого модуля. 
-    В баннере строка 75bf4ee [master] представлена как пример того, что может получиться.
-    Если хотите проверить это в действии то вместо нее
-    добавте строку ${gitRevSync.short()}[${gitRevSync.branch()}], уберите комментраий со строки 
-    //gitRevSync = require("git-rev-sync"), и убедитесь что ваш проект подключен к гиту. 
-    В файл все это включено просто потому, что я включаю это во все свои gulp окружения. */
+/* Once I adopted some ideas in building a gulp environment from Andrew Welch
+   (https://nystudio107.com/blog/a-gulp-workflow-for-frontend-development-automation) 
+    and since then  I also add a banner to my files, which is described in the next line of code. With a help of 
+    git-rev-sync package I put  a short hash of the commit to my code from which
+    a release was built. Although such kind of a banner is not suitable for projects,  
+    which do not use git (partly suitable), it is not of high importance in this case because
+    you will watch my code loaded from GitHub. However, since the examiner can
+    do not have access to the git, I commented out the use of this module. 
+    The line 75bf4ee [master] of banner represents an example of how it can be.
+    In order One wold like to see and check it then One should add line 
+    ${gitRevSync.short()}[${gitRevSync.branch()}] instead of it, delete comment from the line 
+    //gitRevSync = require("git-rev-sync"), and make sure that the project is connected to git. 
+    In is included in file only for the reason that I always include it in my gulp environment. */
 const banner = 
 `/**
  * @project     ${package.name}
@@ -57,85 +56,85 @@ const banner =
 
 `;
 
-/* Задача на очистку dist директории. Здесь и далее каждая задача начинается с вывода на консоль
-    сообщения. */
+/* Task of clearing dist directory. Here an after each task starts with displaying  a message 
+    to console. */
 gulp.task("clean", () => {
     fancyLog("-> Clean dist & build directories");
     del("./dist/**/*");
     del("./build/**/*");
 });
 
-/* Задача на сборку скриптов. */
+/* Task of building scripts. */
 gulp.task("scripts", () => {
     fancyLog("-> Building JavaScripts");
     return gulp.src(package.globs.distJs)
-        /* Здесь и далее каждая задача оборачивается в поток gulp-plumber */
+        /* Here an after each task is wrapped in stream gulp-plumber */
         .pipe(plumber({ errorHandler: onError }))
-        /* Для контроля файлов используется пакет gulp-newer. Его действие будет полезным только без использования
-            задачи clean (например при livereload или вызове задачи scripts напрямую) */
+        /* For file control gulp-newer package is used. Its action will be useful only without using
+           clean tasks(for example when livereload or when calling scripts tasks directly) */
         .pipe(newer({ dest: package.paths.dist.js + "all.min.js" }))
-        /* Начать сбор информации для построения карты файла при помощи пакета gulp-sourcemaps */
+        /* Start collecting information for building a sourcemap using the package gulp-sourcemaps */
         .pipe(sourcemaps.init({ loadMaps: true }))
-        /* Объединить все файлы в один gulp-concat */
+        /* Merge all files into one gulp-concat */
         .pipe(concat("all.min.js"))
-        /* Минифицировать файл при помощи пакета gulp-uglify */
+        /* Minify the file with the gulp-uglify package*/
         .pipe(uglify())
-        /* Добавить баннер к результату при помощи пакета gulp-header */
+        /* Add a banner to the result using the package gulp-header */
         .pipe(header(banner))
-        /* Записать карту файла */
+        /* Record a sourcemap */
         .pipe(sourcemaps.write("./"))
-        /* Вывести информацию о размере файлов при помощи пакета gulp-size */
+        /* Display information about the size of files using the gulp-size package */
         .pipe(size({ gzip: true, showFiles: true }))
-        /* Записать результат по заданному пути */
+        /* Record the result by specified path */
         .pipe(gulp.dest(package.paths.dist.js));
 });
 
-/* Задача на компиляцию SCSS в CSS */
+/* The task of compiling SCSS in CSS */
 gulp.task("compile:scss", () => {
     fancyLog("-> Compiling scss");
     return gulp.src(package.paths.src.scss + package.vars.scssName)
         .pipe(plumber({ errorHandler: onError }))
-        /* Начать сбор информации для построения карты файла при помощи 
-            пакета gulp-sourcemaps */
+        /* Start collecting information for building a sourcemap with
+             the gulp-sourcemaps package */
         .pipe(sourcemaps.init({ loadMaps: true }))
-        /* Скомпилировать входной SCSS файл в файл таблиц стилей */
+        /* Compile the input SCSS file into a stylesheet file */
         .pipe(
             sass().on("error", sass.logError)
         )
-        /* При помощи пакета gulp-cached закэшировать результаты для дальнейшего
-            улучшения производительности (например, котгда будет использовано
-            наблюдение за изменениями файлов) */
+        /* With the help of the gulp-cached package , cache the results for further
+            improved performance (for example, when the monitoring of file changes 
+            will be used) */
         .pipe(cached("sass"))
-        /* Использования модуля autoprefixer для добавления вендорных префиксов
-            к стилям */
+        /* Using the autoprefixer module to add vendor prefixes
+           to styles */
         .pipe(autoprefixer())
-        /* Записать карту файла */
+        /* Record a sourcemap */
         .pipe(sourcemaps.write("./"))
-         /* Вывести информацию о размере файлов при помощи пакета gulp-size */
+         /* Display information about the size of files using the gulp-size package */
         .pipe(size({ gzip: true, showFiles: true }))
-        /* Записать результат компиляции по указанному временному пути */
+        /* Record the result of compiling to the specified temporary path */
         .pipe(gulp.dest(package.paths.build.css));     
 });
 
-/* Задача на сборку стилей. Зависит от вспомогательной задачи compile:scss */
+/* The task of assembling styles. Depends on the secondary task compile:scss */
 gulp.task("styles", [ "compile:scss" ], () => {
     fancyLog("-> Building css");
     return gulp.src(package.globs.distCss)
         .pipe(plumber({ errorHandler: onError }))
-        /* Для контроля файлов используется пакет gulp-newer. Его действие будет полезным только без использования
-            задачи clean (например при livereload или вызове задачи styles напрямую) */
+        /* To control the files, the gulp-newer package is used. ts action will be useful only without using
+           clean tasks(for example when livereload or when calling styles tasks directly) */
         .pipe(newer({ dest: package.paths.dist.css + "all.min.css" }))
-        /* Вывести на консоль список файлов, которые будут использоваться. В данной задаче это не особенно
-            важно, т. к. файл будет всего один. Но, как я писал ранее в этом файле многое так, как я привык
-            делать за многолетнее использование gulp. В любом случае это полезно знать. Для вывода используется
-            пакет gulp-print */
+        /*  Display on console list of files to be used. In this task it is not much important
+            as far as there is only one file. But as i mentioned before in this file I do it as I used to
+            for many years of use gulp. In any case, it's useful to know. To display
+           a gulp-print package is used*/
         .pipe(print())
-        /* Начать сбор информации для построения карты файла при помощи 
-            пакета gulp-sourcemaps */
+        /* Start collecting information for building a sourcemap with
+             the gulp-sourcemaps package */
         .pipe(sourcemaps.init({ loadMaps: true }))
-        /* Объединить все файлы в один gulp-concat */
+        /* Merge all files into one gulp-concat */
         .pipe(concat("all.min.css"))
-        /* Минифицировать и оптимизировать выходной файл при помощи пакета gulp-cssnano */
+        /* Minify and optimize the output file using the package gulp-cssnano */
         .pipe(cssnano({
             discardComments: {
                 removeAll: true
@@ -145,22 +144,22 @@ gulp.task("styles", [ "compile:scss" ], () => {
             minifyFontValues: true,
             minifySelectors: true
         }))
-        /* Добавить баннер к результату при помощи пакета gulp-header */
+        /* Add a banner to the result using the package gulp-header */
         .pipe(header(banner))
-        /* Записать карту файла */
+        /* Record a sourcemap */
         .pipe(sourcemaps.write("./"))
-        /* Вывести информацию о размере файлов при помощи пакета gulp-size */
+        /* Display information about the size of files using the gulp-size package */
         .pipe(size({ gzip: true, showFiles: true }))
-        /* Записать результат по заданному пути */
+        /* Record the result by specified path */
         .pipe(gulp.dest(package.paths.dist.css));
 });
 
-/* Задача на оптимизацию изображений */
+/* Task of  image optimization */
 gulp.task("images", () => {
     fancyLog("-> Images optimizing");
     return gulp.src(package.paths.src.images + "**/*.{png,jpg}")
         .pipe(plumber({ errorHandler: onError }))
-        /* Оптимизация изображений из входной папки в формате png и jpg при помощи пакета gulp-imagemin */
+        /*  png and jpg image optimization from incoming directory  with a help of gulp-imagemin package*/
         .pipe(imagemin({
             progressive: true,
             interlaced: true,
@@ -169,48 +168,48 @@ gulp.task("images", () => {
             verbose: true,
             use: []
         }))
-         /* Записать результат по заданному пути */
+         /* Record the result by specified path */
         .pipe(gulp.dest(package.paths.dist.images));
 });
 
-/* Задача на копирование иконок */
+/* Task of icon copying */
 gulp.task("icons", () => {
     fancyLog("-> Icons copying");
     return gulp.src(package.globs.distIcons)
         .pipe(plumber({ errorHandler: onError }))
-        /* Вывести на консоль все файлы, которые будут скопированы. */
+        /* Display to the console all the files that will be copied. */
         .pipe(print())
         .pipe(gulp.dest(package.paths.dist.icons));
 });
 
-/* Задача для сборки HTML шаблона */
+/* Task of HTML Template compilation*/
 gulp.task("template", () => {
     fancyLog("-> Building template");
     return gulp.src(package.paths.src.template)
         .pipe(plumber({ errorHandler: onError }))
-        /* Заменить ссылки на картинки при помощи пакета gulp-replace. В реальном проекте вы наверняка будете делать по другому.
-            Например, вам в голову не придет в папке с собранными файлами нарушить заданную в шаблоне структуру. Или вы будете
-            использовать не чистый HTML шаблон и заменять ссылки каким то другим пакетом, коих множество */
+        /*Replace links to pictures using the gulp-replace package. In a real project, you will probably do it in a different way.
+            For example, it would not occur to you  to violate the specified in the template structure in the folder with the collected files. Or
+            you will not use not pure HTML template and replace links with any of many packages */
         .pipe(replace(/images\//g, `content/images/`))
-        /* Заменить ссылки на некоторые файлы ресурсов (стили, скрипты) при помощи пакета gulp-useref */
+        /* Replace links to some resource files (styles, scripts) using the  gulp-useref package*/
         .pipe(useref())
         .pipe(gulp.dest(package.paths.dist.template));
 });
 
-/* Основная задача для построения фронт-энда */
+/* The main task for building a front-end */
 gulp.task("build", (done) => {
-    /* При запуске этой задачи первым делом очистятся директории dist и build. Затем, при помощи пакета run-sequence
-        запустятся все остальные задачи, необходимые для построения сайта */
+    /* When you run this task, the dist and build directories will be cleaned first. Then, using the run-sequence package
+         all other tasks which are necessary for building a site will be launched */
     runSequence("clean", "images", "icons", "styles", "scripts", "template", done);
 });
 
-/* Задача по-умолчанию. Собирает проект и запускает локальный веб-сервер. Для решения подобных задач я обычно использую 
+/* Default task. Builds the project and runs the local web server. For this kind of tasks I usually use 
      gulp-server-livereload. */
 gulp.task("default", [ "build" ], () => {
-    /* Сервер запустится на 9000 порту. Окно браузера будет открыто автоматически. */
+    /* The server will start on the 9000 port. The browser window will be opened automatically. */
     gulp.src("./dist").pipe(server({ port: 9000, open: true, livereload: true }));
 
-    /* Наблюдение за изменением файлов SCSS и JS */
+    /* Monitoring changes in files SCSS and JS */
     gulp.watch([ 
         package.paths.src.scss + "**/*.scss", 
         package.paths.src.scss + "**/*.sass" 
